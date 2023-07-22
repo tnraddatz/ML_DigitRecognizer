@@ -4,6 +4,8 @@ Competition: https://www.kaggle.com/competitions/digit-recognizer/overview
 
 Submission Accuracy: 0.79553 
 
+Implementation: Vanilla Neural Network
+
 ### Start here if...
 You have some experience with R or Python and machine learning basics, but you’re new to computer vision. This competition is the perfect introduction to techniques like neural networks using a classic dataset including pre-extracted features.
 
