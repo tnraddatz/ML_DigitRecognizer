@@ -29,7 +29,7 @@ def categorical_cross_entropy(y_true, y_pred):
 
 #size
 input_size = 28 * 28
-hidden_size = 600
+hidden_size = 128
 output_size = 10
 
 #instantiate values
@@ -50,8 +50,8 @@ b_i_h = np.zeros(hidden_size)
 b_h_o = np.zeros(output_size)
 
 # Training parameters
-learning_rate = 1
-epochs = 1000
+learning_rate = .75
+epochs = 50
 
 # Training loop
 for epoch in range(epochs):
@@ -63,25 +63,25 @@ for epoch in range(epochs):
     o = sigmoid(o_pre)
 
     # Calculate the loss
-    
-    #sigmoid loss
     loss = np.mean((o - train_labels) ** 2)
-
-    #categorical_cross_entropy
-    #loss = categorical_cross_entropy(train_labels, o)
-
-    # Backpropagation
-    output_error = (o - train_labels) * sigmoid_derivative(o)
-    hidden_error = np.dot(output_error, w_h_o.T) * sigmoid_derivative(h)
-
-    # Update weights and biases
-    w_h_o -= learning_rate * np.dot(h.T, output_error) / len(train_images)
-    b_h_o -= learning_rate * np.sum(output_error, axis=0) / len(train_images)
-    w_i_h -= learning_rate * np.dot(train_images.T, hidden_error) / len(train_images)
-    b_i_h -= learning_rate * np.sum(hidden_error, axis=0) / len(train_images)
-
-    # Print progress
     print(f"Epoch {epoch+1}/{epochs}, Loss: {loss}")
+    
+    # Derivatives
+    derivative_of_loss = (o - train_labels)
+    derivative_of_output = sigmoid_derivative(o)
+    derivative_of_w_h_o_with_respect_to_w = h.T
+    derivative_of_w_h_o_with_respect_to_h = w_h_o.T
+    derivative_of_h = sigmoid_derivative(h)
+    
+    # Backpropagation
+    # Verbose to explain backpropogation
+    # Weights
+    w_h_o -= learning_rate * np.dot(derivative_of_w_h_o_with_respect_to_w, (derivative_of_loss * derivative_of_output)) / len(train_images)
+    w_i_h -= learning_rate * np.dot(train_images.T, (np.dot((derivative_of_loss * derivative_of_output), derivative_of_w_h_o_with_respect_to_h))) / len(train_images)
+    
+    # Bias
+    b_h_o -= learning_rate * np.sum(derivative_of_loss * derivative_of_output, axis=0) / len(train_images)
+    b_i_h -= learning_rate * np.sum(np.dot((derivative_of_loss * derivative_of_output), derivative_of_w_h_o_with_respect_to_h) * derivative_of_h, axis=0) / len(train_images)
 
 # Prediction function
 def predict(image):
@@ -101,3 +101,9 @@ for i in range(total):
 
 accuracy = correct / total
 print(f"Training accuracy: {accuracy * 100:.2f}%")
+
+# Save the weights to a .npy file
+# np.save('weights_w_i_h.npy', w_i_h)
+# np.save('weights_w_h_o.npy', w_h_o)
+# np.save('weights_b_i_h.npy', b_i_h)
+# np.save('weights_b_h_o.npy', b_h_o)
