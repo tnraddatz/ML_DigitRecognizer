@@ -11,7 +11,7 @@ MNIST ("Modified National Institute of Standards and Technology") is the de fact
 
 In this competition, your goal is to correctly identify digits from a dataset of tens of thousands of handwritten images. We’ve curated a set of tutorial-style kernels which cover everything from regression to neural networks. We encourage you to experiment with different algorithms to learn first-hand what works well and how techniques compare.
 
-## Implementation of Neural Network
+# Implementation of Neural Network
 
 This code uses a simple feed-forward neural network with one hidden layer to classify handwritten digits from the MNIST dataset. The dataset consists of 28x28 pixel images of handwritten digits, and the task is to determine which digit each image represents (a multi-class classification problem with 10 classes, representing the digits 0-9).
 
