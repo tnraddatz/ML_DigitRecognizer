@@ -1,4 +1,4 @@
-Of course, I apologize for any confusion. Let me provide you with a clear and correct explanation of backpropagation and the weight update process.
+## Training Explaination for NN
 
 1. Backpropagation Overview:
 Backpropagation is a fundamental algorithm used to train neural networks. It involves computing the gradients of the loss function with respect to the model's parameters (weights and biases) and then using these gradients to update the parameters in the opposite direction of the gradient to minimize the loss function.

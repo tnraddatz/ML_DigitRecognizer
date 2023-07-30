@@ -21,15 +21,35 @@ def one_hot_encode(labels, num_classes):
         encoded_labels[i][label] = 1
     return encoded_labels
 
-# Update the loss calculation
-def categorical_cross_entropy(y_true, y_pred):
-    epsilon = 1e-10
-    y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-    return -np.sum(y_true * np.log(y_pred))
+# Categorical Cross-Entropy Loss
+def categorical_cross_entropy(labels, predictions):
+    epsilon = 1e-15  # Smoothing term to avoid division by zero
+    predictions = np.clip(predictions, epsilon, 1 - epsilon)
+    loss = -np.sum(labels * np.log(predictions)) / len(labels)
+    return loss
+
+# Derivative of Categorical Cross-Entropy Loss
+def categorical_cross_entropy_derivative(labels, predictions):
+    epsilon = 1e-15  # Smoothing term to avoid division by zero
+    predictions = np.clip(predictions, epsilon, 1 - epsilon)
+    derivative = -labels / (predictions + epsilon) / len(labels)
+    return derivative
+
+def softmax(x):
+    e_x = np.exp(x - np.max(x)) # subtract max(x) for numerical stability
+    return e_x / e_x.sum(axis=1, keepdims=True)
+
+def softmax_derivative(x):
+    s = x.reshape(-1,1)
+    return np.diagflat(s) - np.dot(s, s.T)
+
+def cross_entropy_softmax_derivative(labels, predictions):
+    return predictions - labels
+
 
 #size
 input_size = 28 * 28
-hidden_size = 128
+hidden_size = 220
 output_size = 10
 
 #instantiate values
@@ -50,8 +70,8 @@ b_i_h = np.zeros(hidden_size)
 b_h_o = np.zeros(output_size)
 
 # Training parameters
-learning_rate = .75
-epochs = 50
+learning_rate = .28
+epochs = 700
 
 # Training loop
 for epoch in range(epochs):
@@ -60,29 +80,27 @@ for epoch in range(epochs):
     h = sigmoid(h_pre)
     
     o_pre = np.dot(h, w_h_o) + b_h_o
-    o = sigmoid(o_pre)
+    o = softmax(o_pre)
 
     # Calculate the loss
-    loss = np.mean((o - train_labels) ** 2)
+    loss = categorical_cross_entropy(train_labels, o)
     print(f"Epoch {epoch+1}/{epochs}, Loss: {loss}")
     
     # Derivatives
-    derivative_of_loss = (o - train_labels)
-    derivative_of_output = sigmoid_derivative(o)
+    derivative_of_loss_and_output = cross_entropy_softmax_derivative(train_labels, o) # replaced with softmax cross entropy derivative
     derivative_of_w_h_o_with_respect_to_w = h.T
     derivative_of_w_h_o_with_respect_to_h = w_h_o.T
     derivative_of_h = sigmoid_derivative(h)
     
     # Backpropagation
-    # Verbose to explain backpropogation
     # Weights
-    w_h_o -= learning_rate * np.dot(derivative_of_w_h_o_with_respect_to_w, (derivative_of_loss * derivative_of_output)) / len(train_images)
-    w_i_h -= learning_rate * np.dot(train_images.T, (np.dot((derivative_of_loss * derivative_of_output), derivative_of_w_h_o_with_respect_to_h))) / len(train_images)
+    w_h_o -= learning_rate * np.dot(derivative_of_w_h_o_with_respect_to_w, derivative_of_loss_and_output) / len(train_images)
+    w_i_h -= learning_rate * np.dot(train_images.T, np.dot(derivative_of_loss_and_output, derivative_of_w_h_o_with_respect_to_h) * derivative_of_h) / len(train_images)
     
     # Bias
-    b_h_o -= learning_rate * np.sum(derivative_of_loss * derivative_of_output, axis=0) / len(train_images)
-    b_i_h -= learning_rate * np.sum(np.dot((derivative_of_loss * derivative_of_output), derivative_of_w_h_o_with_respect_to_h) * derivative_of_h, axis=0) / len(train_images)
-
+    b_h_o -= learning_rate * np.sum(derivative_of_loss_and_output, axis=0) / len(train_images)
+    b_i_h -= learning_rate * np.sum(np.dot(derivative_of_loss_and_output, derivative_of_w_h_o_with_respect_to_h) * derivative_of_h, axis=0) / len(train_images)
+    
 # Prediction function
 def predict(image):
     h_pre = np.dot(image, w_i_h) + b_i_h
@@ -103,7 +121,7 @@ accuracy = correct / total
 print(f"Training accuracy: {accuracy * 100:.2f}%")
 
 # Save the weights to a .npy file
-# np.save('weights_w_i_h.npy', w_i_h)
-# np.save('weights_w_h_o.npy', w_h_o)
-# np.save('weights_b_i_h.npy', b_i_h)
-# np.save('weights_b_h_o.npy', b_h_o)
+np.save('weights_w_i_h.npy', w_i_h)
+np.save('weights_w_h_o.npy', w_h_o)
+np.save('weights_b_i_h.npy', b_i_h)
+np.save('weights_b_h_o.npy', b_h_o)

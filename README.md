@@ -2,7 +2,7 @@
 
 Competition: https://www.kaggle.com/competitions/digit-recognizer/overview
 
-Submission Accuracy: 0.79553 
+Submission Accuracy: 87%
 
 Implementation: Vanilla Neural Network
 
